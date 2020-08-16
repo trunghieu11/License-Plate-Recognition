@@ -3,6 +3,7 @@ import cv2
 from pathlib import Path
 import argparse
 import time
+import os
 
 
 def get_arguments():
@@ -14,6 +15,9 @@ def get_arguments():
 
 args = get_arguments()
 img_path = Path(args.image_path)
+
+# get image name
+image_name = os.path.basename(img_path)
 
 # read image
 img = cv2.imread(str(img_path))
@@ -31,6 +35,11 @@ image = model.predict(img)
 end = time.time()
 
 print('Model process on %.2f s' % (end - start))
+
+# save image
+output_path = os.path.join("output", image_name)
+print(output_path)
+cv2.imwrite(output_path, image) 
 
 # show image
 cv2.imshow('License Plate', image)

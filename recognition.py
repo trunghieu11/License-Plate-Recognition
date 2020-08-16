@@ -18,8 +18,9 @@ class E2E(object):
         self.image = np.empty((28, 28, 1))
         self.detectLP = detectNumberPlate()
         self.recogChar = CNN_Model(trainable=False).model
-        self.recogChar.load_weights('./weights/weight.h5')
+        self.recogChar.load_weights('./weights/original_weight.h5')
         self.candidates = []
+        self.prev_candidates = dict()
 
     def extractLP(self):
         coordinates = self.detectLP.detect(self.image)
@@ -70,6 +71,7 @@ class E2E(object):
         cv2.imwrite("step2_2.png", thresh)
         thresh = imutils.resize(thresh, width=400)
         thresh = cv2.medianBlur(thresh, 5)
+        cv2.imwrite("step2_3.png", thresh)
 
         # connected components analysis
         labels = measure.label(thresh, connectivity=2, background=0)
@@ -85,7 +87,7 @@ class E2E(object):
             mask[labels == label] = 255
 
             # find contours from mask
-            contours, hierarchy = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+            _, contours, hierarchy = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
             if len(contours) > 0:
                 contour = max(contours, key=cv2.contourArea)
@@ -101,13 +103,54 @@ class E2E(object):
                     candidate = np.array(mask[y:y + h, x:x + w])
                     square_candidate = convert2Square(candidate)
                     square_candidate = cv2.resize(square_candidate, (28, 28), cv2.INTER_AREA)
-                    # cv2.imwrite('./characters/' + str(y) + "_" + str(x) + ".png", cv2.resize(square_candidate, (56, 56), cv2.INTER_AREA))
+                    cv2.imwrite('./characters/' + str(x) + "_" + str(y) + ".png", cv2.resize(square_candidate, (56, 56), cv2.INTER_AREA))
                     square_candidate = square_candidate.reshape((28, 28, 1))
                     self.candidates.append((square_candidate, (y, x)))
+
+    def correct_the_result(self, result):
+        size = len(result)
+        part_1_result = []
+        anchor = 3
+
+        # select first 3 correct characters
+        for i in range(size):
+            head_max_idx = np.argmax(result[i])
+
+            if head_max_idx == 31:
+                continue
+
+            tail_max_idx = np.argmax(result[i + 2])
+
+            if i + 2 < size and 0 <= tail_max_idx <= 20:
+                part_1_result.append(head_max_idx)
+                part_1_result.append(np.argmax(result[i + 1, :-1]))
+                part_1_result.append(tail_max_idx)
+                anchor = i + 3
+                break
+
+        max_values = np.max(result[anchor:, 21:31], axis=1)
+        max_index = np.argsort(max_values)[-5:] + anchor
+        max_index = set(max_index.tolist())
+
+        part_2_result = []
+        for i in range(anchor, size):
+            if i in max_index:
+                part_2_result.append(np.argmax(result[i, 21:31]) + 21)
+
+        return part_1_result + part_2_result
+
+    def select_candidates(self, result_label):
+        prefix = result_label[:3]
+        for key, value in self.prev_candidates.items():
+            if prefix in key:
+                return value
+        return []
 
     def recognizeChar(self):
         characters = []
         coordinates = []
+
+        self.candidates.sort(key=lambda x: x[1][1])
 
         for char, coordinate in self.candidates:
             characters.append(char)
@@ -115,13 +158,23 @@ class E2E(object):
 
         characters = np.array(characters)
         result = self.recogChar.predict_on_batch(characters)
-        result_idx = np.argmax(result, axis=1)
+
+        result_idx = self.correct_the_result(result)
+
+        result_label = "".join(ALPHA_DICT[x] if x != 31 else "" for x in result_idx)
 
         self.candidates = []
+
+        if len(result_idx) != 8:
+            self.candidates = self.select_candidates(result_label)
+            return
+
         for i in range(len(result_idx)):
             if result_idx[i] == 31:    # if is background or noise, ignore it
                 continue
             self.candidates.append((ALPHA_DICT[result_idx[i]], coordinates[i]))
+
+        self.prev_candidates[result_label] = self.candidates
 
     def format(self):
         first_line = []
