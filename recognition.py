@@ -65,13 +65,13 @@ class E2E(object):
         # adaptive threshold
         T = threshold_local(V, 15, offset=10, method="gaussian")
         thresh = (V > T).astype("uint8") * 255
-        cv2.imwrite("step2_1.png", thresh)
+        # cv2.imwrite("step2_1.png", thresh)
         # convert black pixel of digits to white pixel
         thresh = cv2.bitwise_not(thresh)
-        cv2.imwrite("step2_2.png", thresh)
+        # cv2.imwrite("step2_2.png", thresh)
         thresh = imutils.resize(thresh, width=400)
         thresh = cv2.medianBlur(thresh, 5)
-        cv2.imwrite("step2_3.png", thresh)
+        # cv2.imwrite("step2_3.png", thresh)
 
         # connected components analysis
         labels = measure.label(thresh, connectivity=2, background=0)

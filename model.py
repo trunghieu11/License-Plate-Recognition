@@ -2,7 +2,6 @@ import keras
 import numpy as np
 
 import config
-from data_provider import Datasets
 from keras import optimizers
 from keras.layers import Dense, Conv2D, MaxPooling2D, Dropout, Flatten
 from keras.callbacks import ReduceLROnPlateau, ModelCheckpoint
@@ -22,11 +21,6 @@ class CNN_Model(object):
 
         # Building model
         self._build_model()
-
-        # Input data
-        if trainable:
-            self.model.summary()
-            self.data = Datasets()
 
         self.model.compile(loss="categorical_crossentropy", optimizer=optimizers.Adam(1e-3), metrics=['acc'])
 
@@ -52,16 +46,3 @@ class CNN_Model(object):
         self.model.add(Dense(512, activation='relu'))
         self.model.add(Dropout(0.5))
         self.model.add(Dense(32, activation='softmax'))
-
-    def train(self):
-        # reduce learning rate
-        reduce_lr = ReduceLROnPlateau(monitor='val_acc', factor=0.2, patience=5, verbose=1, )
-        # Model Checkpoint
-        cpt_save = ModelCheckpoint('./weight.h5', save_best_only=True, monitor='val_acc', mode='max')
-
-        print("Training......")
-        trainX, trainY = self.data.gen()
-        trainX = np.array(trainX)
-
-        self.model.fit(trainX, trainY, validation_split=0.15, callbacks=[cpt_save, reduce_lr], verbose=1,
-                       epochs=self.num_epochs, shuffle=True, batch_size=self.batch_size)

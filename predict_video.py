@@ -33,14 +33,9 @@ def predict_one_image(img, model):
 
 
 if __name__ == "__main__":
-    # args = get_arguments()
-    # input_video = args.input_video
-    # output_video = args.output_video
-
-    input_video = "test_video/test.MOV"
-    output_video = "output/output_test.MOV"
-    # input_video = "test_video/IMG_0119.MOV"
-    # output_video = "output/output_IMG_0119.MOV"
+    args = get_arguments()
+    input_video = args.input_video
+    output_video = args.output_video
 
     # video_size = (540, 960)
     # video_size = (1080, 1920)
