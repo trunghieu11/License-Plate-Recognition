@@ -7,18 +7,18 @@ import predict_video
 # Create SQS client
 sqs = boto3.client(
     'sqs', 
-    aws_access_key_id="AKIARXHPRX3OK75ZAE6Z", 
-    aws_secret_access_key="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",
-    region_name="ap-southeast-1"
+    aws_access_key_id="",
+    aws_secret_access_key="",
+    region_name=""
 )
 s3 = boto3.client(
     's3',
-    aws_access_key_id="AKIARXHPRX3OK75ZAE6Z", 
-    aws_secret_access_key="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",
-    region_name="ap-southeast-1"
+    aws_access_key_id="",
+    aws_secret_access_key="",
+    region_name=""
 )
-bucket = "lephuocmy686868"
-queue_url = 'https://sqs.ap-southeast-1.amazonaws.com/118613982940/lephuocmy686868sqs'
+bucket = ""
+queue_url = ''
 
 
 while True:
