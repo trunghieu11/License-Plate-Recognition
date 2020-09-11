@@ -103,7 +103,7 @@ class E2E(object):
                     candidate = np.array(mask[y:y + h, x:x + w])
                     square_candidate = convert2Square(candidate)
                     square_candidate = cv2.resize(square_candidate, (28, 28), cv2.INTER_AREA)
-                    cv2.imwrite('./characters/' + str(x) + "_" + str(y) + ".png", cv2.resize(square_candidate, (56, 56), cv2.INTER_AREA))
+                    # cv2.imwrite('./characters/' + str(x) + "_" + str(y) + ".png", cv2.resize(square_candidate, (56, 56), cv2.INTER_AREA))
                     square_candidate = square_candidate.reshape((28, 28, 1))
                     self.candidates.append((square_candidate, (y, x)))
 

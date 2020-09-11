@@ -32,11 +32,7 @@ def predict_one_image(img, model):
     return processed_image
 
 
-if __name__ == "__main__":
-    args = get_arguments()
-    input_video = args.input_video
-    output_video = args.output_video
-
+def predict_video(input_video, output_video):
     # video_size = (540, 960)
     # video_size = (1080, 1920)
     video_size = (1920, 1080)
@@ -74,3 +70,11 @@ if __name__ == "__main__":
 
     cap.release()
     cv2.destroyAllWindows()
+
+
+if __name__ == "__main__":
+    args = get_arguments()
+    input_video = args.input_video
+    output_video = args.output_video
+
+
