@@ -1,3 +1,4 @@
+import os
 import cv2
 import numpy as np
 from skimage import measure
@@ -7,6 +8,7 @@ from data_utils import order_points, convert2Square, draw_labels_and_boxes
 from detect import detectNumberPlate
 from model import CNN_Model
 from skimage.filters import threshold_local
+from license_plate_ocr import OCR
 
 ALPHA_DICT = {0: 'A', 1: 'B', 2: 'C', 3: 'D', 4: 'E', 5: 'F', 6: 'G', 7: 'H', 8: 'K', 9: 'L', 10: 'M', 11: 'N', 12: 'P',
               13: 'R', 14: 'S', 15: 'T', 16: 'U', 17: 'V', 18: 'X', 19: 'Y', 20: 'Z', 21: '0', 22: '1', 23: '2', 24: '3',
@@ -21,6 +23,7 @@ class E2E(object):
         self.recogChar.load_weights('./weights/original_weight.h5')
         self.candidates = []
         self.prev_candidates = dict()
+        self.ocr = OCR()
 
     def extractLP(self):
         coordinates = self.detectLP.detect(self.image)
@@ -30,7 +33,7 @@ class E2E(object):
         for coordinate in coordinates:
             yield coordinate
 
-    def predict(self, image):
+    def predict(self, image, name):
         # Input image or frame
         self.image = image
 
@@ -42,18 +45,23 @@ class E2E(object):
 
             # crop number plate used by bird's eyes view transformation
             LpRegion = perspective.four_point_transform(self.image, pts)
-            # cv2.imwrite('step1.png', LpRegion)
-            # segmentation
-            self.segmentation(LpRegion)
+            img_path = os.path.join('output/lp/', name)
+            cv2.imwrite(img_path, LpRegion)
 
-            # recognize characters
-            self.recognizeChar()
+            license_plate = self.ocr.predict(img_path)
 
-            # format and display license plate
-            license_plate = self.format()
+            # # segmentation
+            # self.segmentation(LpRegion)
+            #
+            # # recognize characters
+            # self.recognizeChar()
+            #
+            # # format and display license plate
+            # license_plate = self.format()
 
-            # draw labels
-            self.image = draw_labels_and_boxes(self.image, license_plate, coordinate)
+            if license_plate is not None and len(license_plate) > 4:
+                # draw labels
+                self.image = draw_labels_and_boxes(self.image, license_plate, coordinate)
 
         # cv2.imwrite('example.png', self.image)
         return self.image
