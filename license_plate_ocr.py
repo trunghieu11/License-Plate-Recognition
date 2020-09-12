@@ -21,7 +21,8 @@ class OCR:
         self.ocr_threshold = ocr_threshold
 
     def predict(self, img_path):
-        R, (width, height) = detect(self.ocr_net, self.ocr_meta, img_path.encode('utf-8'), thresh=self.ocr_threshold, nms=None)
+        # R, (width, height) = detect(self.ocr_net, self.ocr_meta, img_path.encode('utf-8'), thresh=self.ocr_threshold, nms=None)
+        R, (width, height) = detect_image(self.ocr_net, self.ocr_meta, img_path, thresh=self.ocr_threshold, nms=None)
 
         if len(R):
             L = dknet_label_conversion(R, width, height)

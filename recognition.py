@@ -45,10 +45,10 @@ class E2E(object):
 
             # crop number plate used by bird's eyes view transformation
             LpRegion = perspective.four_point_transform(self.image, pts)
-            img_path = os.path.join('output/lp/', name)
-            cv2.imwrite(img_path, LpRegion)
+            # img_path = os.path.join('output/lp/', name)
+            # cv2.imwrite(img_path, LpRegion)
 
-            license_plate = self.ocr.predict(img_path)
+            license_plate = self.ocr.predict(LpRegion)
 
             # # segmentation
             # self.segmentation(LpRegion)
