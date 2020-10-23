@@ -34,7 +34,7 @@ class OCR:
             # with open('%s/%s_str.txt' % (output_dir, bname), 'w') as f:
             # 	f.write(lp_str + '\n')
 
-            print('\t\tLP: %s' % lp_str)
+            print('\t\tLP: {}'.format(lp_str))
             return lp_str
         else:
             print('No characters found')

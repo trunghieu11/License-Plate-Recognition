@@ -37,6 +37,8 @@ class E2E(object):
         # Input image or frame
         self.image = image
 
+        all_license_plates = []
+
         for coordinate in self.extractLP():     # detect license plate by yolov3
             self.candidates = []
 
@@ -62,9 +64,10 @@ class E2E(object):
             if license_plate is not None and len(license_plate) > 4:
                 # draw labels
                 self.image = draw_labels_and_boxes(self.image, license_plate, coordinate)
+                all_license_plates.append(license_plate)
 
         # cv2.imwrite('example.png', self.image)
-        return self.image
+        return self.image, all_license_plates
 
     def segmentation(self, LpRegion):
         # apply thresh to extracted licences plate
