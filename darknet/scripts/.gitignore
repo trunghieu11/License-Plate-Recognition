@@ -1,0 +1,5 @@
+/dice_label.sh
+/gen_tactic.sh
+/get_coco_dataset.sh
+/imagenet_label.sh
+/voc_label.py
