@@ -54,9 +54,9 @@ if __name__ == "__main__":
     # output_video = args.output_video
     # output_file = args.output_file
 
-    input_video = "test_video/test.MOV"
-    output_video = "output/output_test.avi"
-    output_file = "output/output_file.txt"
+    input_video = "/src/test_video/test.MOV"
+    output_video = "/src/output/output_test.avi"
+    output_file = "/src/output/output_file.txt"
     # input_video = "test_video/IMG_0119.MOV"
     # output_video = "output/output_IMG_0119.MOV"
 
