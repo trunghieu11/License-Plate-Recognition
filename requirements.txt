@@ -1,6 +1,8 @@
 cmake==3.12.0
+dash==1.16.2
 easydict==1.9
 Flask==1.1.2
+gunicorn==20.0.4
 gensim==3.6.0
 h5py==2.10.0
 image==1.5.32
