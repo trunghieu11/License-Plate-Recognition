@@ -17,13 +17,18 @@ ALPHA_DICT = {0: 'A', 1: 'B', 2: 'C', 3: 'D', 4: 'E', 5: 'F', 6: 'G', 7: 'H', 8:
 
 class E2E(object):
     def __init__(self):
+        print ("------- Initial E2E")
         self.image = np.empty((28, 28, 1))
         self.detectLP = detectNumberPlate()
+        print ("------- Loaded detectNumberPlate model")
         self.recogChar = CNN_Model(trainable=False).model
         self.recogChar.load_weights('./weights/original_weight.h5')
+        print ("------- Loaded recogChar model")
         self.candidates = []
         self.prev_candidates = dict()
+        print("------- Before load OCR")
         self.ocr = OCR()
+        print("------- After load OCR")
 
     def extractLP(self):
         coordinates = self.detectLP.detect(self.image)

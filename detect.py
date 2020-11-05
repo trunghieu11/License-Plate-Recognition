@@ -5,14 +5,26 @@ import numpy as np
 
 class detectNumberPlate(object):
     def __init__(self, threshold=0.5):
-        args = utils.get_arguments()
-        self.weight_path = args.weight_path
-        self.cfg_path = args.config_path
-        self.labels = utils.get_labels(args.classes_path)
-        self.threshold = threshold
+        print("------- initial detectNumberPlate")
+        try:
+            # args = utils.get_arguments()
+            # print("------- args: ", args)
+            # self.weight_path = args.weight_path
+            # self.cfg_path = args.config_path
+            # self.labels = utils.get_labels(args.classes_path)
+            # self.threshold = threshold
 
-        # Load model
-        self.model = cv2.dnn.readNet(model=self.weight_path, config=self.cfg_path)
+            self.weight_path = "./weights/yolov3-tiny_15000.weights"
+            self.cfg_path = "./cfg/yolov3-tiny.cfg"
+            self.labels = utils.get_labels("./cfg/yolo.names")
+            self.threshold = threshold
+
+            print("------- before detectNumberPlate.load_model_readNet")
+            # Load model
+            self.model = cv2.dnn.readNet(model=self.weight_path, config=self.cfg_path)
+            print("------- after detectNumberPlate.load_model_readNet")
+        except Exception as ex:
+            print("############## Error: {} ##############".format(str(ex)))
 
     def detect(self, image):
         boxes = []

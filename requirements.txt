@@ -4,6 +4,7 @@ easydict==1.9
 Flask==1.1.2
 gunicorn==20.0.4
 gensim==3.6.0
+get-video-properties==0.1.1
 h5py==2.10.0
 image==1.5.32
 imbalanced-learn==0.4.3

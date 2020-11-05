@@ -28,6 +28,10 @@ class OCR:
             L = dknet_label_conversion(R, width, height)
             L = nms(L, .45)
 
+            print("=========== L ===========")
+            print(L)
+            print("=========================")
+
             L.sort(key=lambda x: x.tl()[0])
             lp_str = ''.join([chr(l.cl()) for l in L])
 

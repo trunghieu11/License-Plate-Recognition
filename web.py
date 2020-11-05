@@ -8,6 +8,8 @@ import dash_core_components as dcc
 import dash_html_components as html
 from dash.dependencies import Input, Output
 import datetime
+from predict_video import predict_video
+from recognition import E2E
 
 IP = os.environ.get("IP", "127.0.0.1")
 PORT = os.environ.get("PORT", "8888")
@@ -28,7 +30,7 @@ app = dash.Dash(server=server)
 
 @server.route("/download/<path:path>")
 def download(path):
-    print("============", path)
+    print("============ ", path)
     """Serve a file from the upload directory."""
     return send_from_directory(UPLOAD_DIRECTORY, path, as_attachment=True)
 
@@ -61,9 +63,17 @@ def save_file(name, content):
     """Decode and store a file uploaded with Plotly Dash."""
     data = content.encode("utf8").split(b";base64,")[1]
     print("=========", UPLOAD_DIRECTORY)
+
     with open(os.path.join(UPLOAD_DIRECTORY, name), "wb") as fp:
         fp.write(base64.decodebytes(data))
 
+    input_path = "/src/app_uploaded_files/{}".format(name)
+    output_path = "/src/app_uploaded_files/output_{}".format(name[:-4] + ".webm")
+    text_path = "/src/app_uploaded_files/text_result.txt"
+
+    print("file {} exists: {}".format(input_path, os.path.exists(input_path)))
+    
+    predict_video(input_path, output_path, text_path)
 
 def uploaded_files():
     """List the files in the upload directory."""
@@ -80,7 +90,8 @@ def file_download_link(filename):
     location = "{}/{}".format(STATIC_VIDEO_URL, filename)
     return html.Video([
         html.Source(src=location, type="video/webm"),
-        html.Source(src=location, type="video/mov")
+        html.Source(src=location, type="video/mov"),
+        html.Source(src=location, type="video/mp4")
     ], controls='controls', width="100%"),
 
 @app.callback(
@@ -102,7 +113,7 @@ def update_output(uploaded_filenames, uploaded_file_contents):
     return html.Div(
         [
             html.Div(file_download_link(file_name), id="input-video", className="six columns x-container"),
-            html.Div(file_download_link(file_name), className="six columns x-container", id="output-video",),
+            html.Div(file_download_link("output_{}".format(file_name[:-4] + ".webm")), id="output-video", className="six columns x-container"),
         ],
         className="box",
     )
