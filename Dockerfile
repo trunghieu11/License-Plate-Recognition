@@ -8,7 +8,7 @@ RUN apt-get update \
   && apt-get install -y libsm6 libxext6 libxrender-dev \
   && apt-get install mlocate \
   && DEBIAN_FRONTEND=noninteractive apt-get -y install libopencv-dev \
-  && apt install ffmpeg
+  && apt install -y ffmpeg
 
 WORKDIR /src
 # COPY . /src
