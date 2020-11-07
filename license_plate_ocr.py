@@ -1,6 +1,8 @@
 import datetime
 import sys
 import traceback
+import re
+
 from glob import glob
 from os.path import splitext, basename
 from time import sleep
@@ -11,6 +13,8 @@ from src.label import dknet_label_conversion
 from src.utils import nms
 
 class OCR:
+    LP_PATTERN = re.compile(r"\d{2}[A-Z]\d{4,5}$")
+
     def __init__(self, ocr_weights='data/ocr/ocr-net.weights',
                  ocr_netcfg='data/ocr/ocr-net.cfg',
                  ocr_dataset='data/ocr/ocr-net.data',
@@ -20,26 +24,30 @@ class OCR:
         self.ocr_meta = dn.load_meta(ocr_dataset.encode('utf-8'))
         self.ocr_threshold = ocr_threshold
 
-    def predict(self, img_path):
+    def predict(self, img):
         # R, (width, height) = detect(self.ocr_net, self.ocr_meta, img_path.encode('utf-8'), thresh=self.ocr_threshold, nms=None)
-        R, (width, height) = detect_image(self.ocr_net, self.ocr_meta, img_path, thresh=self.ocr_threshold, nms=None)
+        R, (width, height) = detect_image(self.ocr_net, self.ocr_meta, img, thresh=self.ocr_threshold, nms=None)
 
         if len(R):
             L = dknet_label_conversion(R, width, height)
             L = nms(L, .45)
+            L.sort(key=lambda x: (x.line(), x.tl()[0]))
 
-            print("=========== L ===========")
-            print(L)
-            print("=========================")
+            # print("=========== L ===========")
+            # for x in L:
+            #     print(x.cl(), x.br(), x.tl(), x.line(), x.prob())
+            # print("=========================")
 
-            L.sort(key=lambda x: x.tl()[0])
             lp_str = ''.join([chr(l.cl()) for l in L])
 
             # with open('%s/%s_str.txt' % (output_dir, bname), 'w') as f:
             # 	f.write(lp_str + '\n')
 
-            print('\t\tLP: {}'.format(lp_str))
-            return lp_str
+            if OCR.LP_PATTERN.match(lp_str):
+                print('\t\tLP: {}'.format(lp_str))
+                return lp_str
+            else:
+                return None
         else:
             print('No characters found')
             return None

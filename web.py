@@ -16,6 +16,7 @@ PORT = os.environ.get("PORT", "8888")
 # UPLOAD_DIRECTORY = "/Users/lephuocmy/Desktop/linhtinh/React-Landing-Page-Template/face-recognition-dash/static/app_uploaded_files"
 UPLOAD_DIRECTORY= os.getcwd() + "/app_uploaded_files"
 STATIC_VIDEO_URL = "http://{}:{}/download/".format(IP, PORT)
+MODEL = E2E()
 
 print("====os.getcwd()======", os.path.abspath(os.getcwd()))
 if not os.path.exists(UPLOAD_DIRECTORY):
@@ -73,7 +74,7 @@ def save_file(name, content):
 
     print("file {} exists: {}".format(input_path, os.path.exists(input_path)))
     
-    predict_video(input_path, output_path, text_path)
+    predict_video(MODEL, input_path, output_path, text_path)
 
 def uploaded_files():
     """List the files in the upload directory."""

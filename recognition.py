@@ -1,5 +1,6 @@
 import os
 import cv2
+import time
 import numpy as np
 from skimage import measure
 from imutils import perspective
@@ -9,6 +10,10 @@ from detect import detectNumberPlate
 from model import CNN_Model
 from skimage.filters import threshold_local
 from license_plate_ocr import OCR
+from vehicle_detection import VehicleDetection
+from license_plate_detection import LicensePlateDetection
+from gen_outputs import GenOutput
+from detect_vehicle import DetectVehicle
 
 ALPHA_DICT = {0: 'A', 1: 'B', 2: 'C', 3: 'D', 4: 'E', 5: 'F', 6: 'G', 7: 'H', 8: 'K', 9: 'L', 10: 'M', 11: 'N', 12: 'P',
               13: 'R', 14: 'S', 15: 'T', 16: 'U', 17: 'V', 18: 'X', 19: 'Y', 20: 'Z', 21: '0', 22: '1', 23: '2', 24: '3',
@@ -21,14 +26,88 @@ class E2E(object):
         self.image = np.empty((28, 28, 1))
         self.detectLP = detectNumberPlate()
         print ("------- Loaded detectNumberPlate model")
-        self.recogChar = CNN_Model(trainable=False).model
-        self.recogChar.load_weights('./weights/original_weight.h5')
-        print ("------- Loaded recogChar model")
+
+        # self.detect_vehicle = DetectVehicle(threshold=0.1)
+
+        # self.recogChar = CNN_Model(trainable=False).model
+        # self.recogChar.load_weights('./weights/original_weight.h5')
+        # print ("------- Loaded recogChar model")
         self.candidates = []
         self.prev_candidates = dict()
+        
+        print("------- Before load VehicleDetection")
+        self.vehicle_detection = VehicleDetection()
+        print("------- After load VehicleDetection")
+        
+        print("------- Before load LicensePlateDetection")
+        self.license_plate_detection = LicensePlateDetection()
+        print("------- After load LicensePlateDetection")
+        
         print("------- Before load OCR")
         self.ocr = OCR()
         print("------- After load OCR")
+        
+        print("------- Before load GenOutput")
+        self.gen_output = GenOutput()
+        print("------- After load GenOutput")
+
+    def predict3(self, img, name):
+        print("-" * 50)
+        Llp_shapes = []
+        Llp_str = []
+        
+        for i, car in enumerate([img]):
+            start_detect_lp = time.time()
+            lp_img, shape = self.license_plate_detection.predict(car, "{}_car{}".format(name, i))
+            print("Predict lp cost: ", time.time() - start_detect_lp)
+
+            Llp_shapes.append(shape)
+
+            if lp_img is not None:
+                start_ocr = time.time()
+                lp_str = self.ocr.predict(lp_img)
+                print("Predict ocr cost: ", time.time() - start_ocr)
+                Llp_str.append(lp_str)
+                print("Result: ", lp_str)
+            else:
+                Llp_str.append(None)
+        
+        start_gen_output = time.time()
+        img = self.gen_output.draw_without_car(img, Llp_shapes, Llp_str, np.array([img.shape[1], img.shape[0]]), np.array([0, 0]))
+        print("Gen output cost: ", time.time() - start_gen_output)
+        return img, Llp_str
+
+    def predict2(self, img, name):
+        print("-" * 50)
+        # self.detect_vehicle.detect(img)
+
+        start_detect_vehicle = time.time()
+        cars_img, Lcars = self.vehicle_detection.predict(img, name)
+        print("Predict vehicle cost: ", time.time() - start_detect_vehicle)
+
+        Llp_shapes = []
+        Llp_str = []
+        
+        for i, car in enumerate(cars_img):
+            start_detect_lp = time.time()
+            lp_img, shape = self.license_plate_detection.predict(car, "{}_car{}".format(name, i))
+            print("Predict lp cost: ", time.time() - start_detect_lp)
+
+            Llp_shapes.append(shape)
+
+            if lp_img is not None:
+                start_ocr = time.time()
+                lp_str = self.ocr.predict(lp_img)
+                print("Predict ocr cost: ", time.time() - start_ocr)
+                Llp_str.append(lp_str)
+                print("Result: ", lp_str)
+            else:
+                Llp_str.append(None)
+        
+        start_gen_output = time.time()
+        img = self.gen_output.draw(img, Lcars, Llp_shapes, Llp_str)
+        print("Gen output cost: ", time.time() - start_gen_output)
+        return img, Llp_str
 
     def extractLP(self):
         coordinates = self.detectLP.detect(self.image)
@@ -52,13 +131,15 @@ class E2E(object):
 
             # crop number plate used by bird's eyes view transformation
             LpRegion = perspective.four_point_transform(self.image, pts)
-            # img_path = os.path.join('output/lp/', name)
-            # cv2.imwrite(img_path, LpRegion)
+            # height, width, _ = LpRegion.shape
+            # LpRegion = LpRegion[:, int(width * 0.1):int(width * 0.9)]
+            img_path = os.path.join('output/lp/{}.jpg'.format(name))
+            cv2.imwrite(img_path, LpRegion)
 
             license_plate = self.ocr.predict(LpRegion)
 
             # # segmentation
-            # self.segmentation(LpRegion)
+            # self.segmentation(LpRegion, name)
             #
             # # recognize characters
             # self.recognizeChar()
@@ -74,20 +155,20 @@ class E2E(object):
         # cv2.imwrite('example.png', self.image)
         return self.image, all_license_plates
 
-    def segmentation(self, LpRegion):
+    def segmentation(self, LpRegion, name):
         # apply thresh to extracted licences plate
         V = cv2.split(cv2.cvtColor(LpRegion, cv2.COLOR_BGR2HSV))[2]
 
         # adaptive threshold
         T = threshold_local(V, 15, offset=10, method="gaussian")
         thresh = (V > T).astype("uint8") * 255
-        cv2.imwrite("step2_1.png", thresh)
+        cv2.imwrite("output/lp/{}_step2_1.png".format(name), thresh)
         # convert black pixel of digits to white pixel
         thresh = cv2.bitwise_not(thresh)
-        cv2.imwrite("step2_2.png", thresh)
+        cv2.imwrite("output/lp/{}_step2_2.png".format(name), thresh)
         thresh = imutils.resize(thresh, width=400)
         thresh = cv2.medianBlur(thresh, 5)
-        cv2.imwrite("step2_3.png", thresh)
+        cv2.imwrite("output/lp/{}_step2_3.png".format(name), thresh)
 
         # connected components analysis
         labels = measure.label(thresh, connectivity=2, background=0)
