@@ -27,7 +27,7 @@ class E2E(object):
         self.detectLP = detectNumberPlate()
         print ("------- Loaded detectNumberPlate model")
 
-        # self.detect_vehicle = DetectVehicle(threshold=0.1)
+        self.detect_vehicle = DetectVehicle(threshold=0.5)
 
         # self.recogChar = CNN_Model(trainable=False).model
         # self.recogChar.load_weights('./weights/original_weight.h5')
@@ -50,6 +50,36 @@ class E2E(object):
         print("------- Before load GenOutput")
         self.gen_output = GenOutput()
         print("------- After load GenOutput")
+
+    def predict4(self, img, name):
+        print("-" * 50)
+        start_detect_vehicle = time.time()
+        cars_img, Lcars = self.detect_vehicle.detect(img, name)
+        print("Predict vehicle cost: ", time.time() - start_detect_vehicle)
+
+        Llp_shapes = []
+        Llp_str = []
+        
+        for i, car in enumerate(cars_img):
+            start_detect_lp = time.time()
+            lp_img, shape = self.license_plate_detection.predict(car, "{}_car{}".format(name, i))
+            print("Predict lp cost: ", time.time() - start_detect_lp)
+
+            Llp_shapes.append(shape)
+
+            if lp_img is not None:
+                start_ocr = time.time()
+                lp_str = self.ocr.predict(lp_img)
+                print("Predict ocr cost: ", time.time() - start_ocr)
+                Llp_str.append(lp_str)
+                print("Result: ", lp_str)
+            else:
+                Llp_str.append(None)
+        
+        start_gen_output = time.time()
+        img = self.gen_output.draw(img, Lcars, Llp_shapes, Llp_str)
+        print("Gen output cost: ", time.time() - start_gen_output)
+        return img, Llp_str
 
     def predict3(self, img, name):
         print("-" * 50)
@@ -79,7 +109,7 @@ class E2E(object):
 
     def predict2(self, img, name):
         print("-" * 50)
-        # self.detect_vehicle.detect(img)
+        self.detect_vehicle.detect(img, name)
 
         start_detect_vehicle = time.time()
         cars_img, Lcars = self.vehicle_detection.predict(img, name)

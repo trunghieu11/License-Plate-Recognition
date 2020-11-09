@@ -17,4 +17,4 @@ COPY requirements.txt /src/
 RUN pip3 install -r requirements.txt
 
 # CMD python3 predict_video.py
-CMD gunicorn -b 0.0.0.0:8888 web:server
+# CMD gunicorn -b 0.0.0.0:8888 web:server

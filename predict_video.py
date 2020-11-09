@@ -2,6 +2,8 @@ import argparse
 import os
 import cv2
 import time
+import traceback
+import sys
 
 from collections import defaultdict
 from recognition import E2E
@@ -24,7 +26,7 @@ def get_arguments():
 
 def predict_one_image(img, model, name):
     # recognize license plate
-    return model.predict3(img, name)
+    return model.predict4(img, name)
 
 
 def select_license_plate(license_list, queue_size=4, match_size=3):
@@ -120,6 +122,9 @@ def predict_video(model, input_video, output_video, output_file, frame_rate=4):
             license_list.append(all_license_plates)
         except Exception as ex:
             print("=======> Error: ", ex)
+            print(traceback.format_exc())
+            # or
+            print(sys.exc_info()[2])
             processed_frame = frame
 
         # cv2.imshow('video', processed_frame)
