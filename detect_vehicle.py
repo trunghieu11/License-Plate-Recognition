@@ -10,8 +10,8 @@ class DetectVehicle(object):
     def __init__(self, threshold=0.5):
         print("------- initial detectNumberPlate")
         try:
-            self.weight_path = "./weights/yolov3.weights"
-            self.cfg_path = "./cfg/yolov3.cfg"
+            self.weight_path = "./weights/yolov3-tiny.weights"
+            self.cfg_path = "./cfg/yolov3-tiny.cfg"
             self.labels = utils.get_labels("./cfg/coco.names")
             self.threshold = threshold
 
@@ -23,7 +23,7 @@ class DetectVehicle(object):
         except Exception as ex:
             print("############## Error: {} ##############".format(str(ex)))
 
-    def detect(self, img, bname):
+    def detect(self, img, bname, pixel_threshold=100000):
         output_dir = "output/tmp"
         boxes = []
         classes_id = []
@@ -64,7 +64,7 @@ class DetectVehicle(object):
                     confidences.append(confidence)
 
         indices = cv2.dnn.NMSBoxes(
-            boxes, confidences, score_threshold=self.threshold, nms_threshold=0.6)
+            boxes, confidences, score_threshold=self.threshold, nms_threshold=0.3)
 
         R = []
         for i in range(len(boxes)):
@@ -87,17 +87,20 @@ class DetectVehicle(object):
             WH = np.array(Iorig.shape[1::-1], dtype=float)
 
             for i, r in enumerate(R):
-                cx, cy, w, h = (np.array(r[2]) / np.concatenate((WH, WH))).tolist()
-                tl = np.array([cx, cy])
-                br = np.array([cx + w, cy + h])
-                label = Label(0, tl, br)
-                Icar = crop_region(Iorig, label)
+                print("car size: w={}, h={}, area={}", r[2][2], r[2][3], r[2][2] * r[2][3])
+                _, _, ori_w, ori_h = r[2]
 
-                Lcars.append(label)
+                if ori_w * ori_h >= pixel_threshold:
+                    cx, cy, w, h = (np.array(r[2]) / np.concatenate((WH, WH))).tolist()
+                    tl = np.array([cx, cy])
+                    br = np.array([cx + w, cy + h])
+                    label = Label(0, tl, br)
+                    Icar = crop_region(Iorig, label)
 
-                cv2.imwrite(
-                    '{}/{}_{}car.png'.format(output_dir, bname, i), Icar)
-                cars_img.append(Icar)
+                    Lcars.append(label)
+
+                    cv2.imwrite('{}/{}_{}car.png'.format(output_dir, bname, i), Icar)
+                    cars_img.append(Icar)
 
             # lwrite('{}/{}_cars.txt'.format(output_dir, bname), Lcars)
 

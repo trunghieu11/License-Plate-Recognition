@@ -43,7 +43,7 @@ class LicensePlateDetection():
 
             s = Shape(Llp[0].pts)
 
-            cv2.imwrite('{}/{}_lp.png'.format(output_dir, bname), Ilp * 255.)
+            # cv2.imwrite('{}/{}_lp.png'.format(output_dir, bname), Ilp * 255.)
             # writeShapes('{}/{}_lp.txt'.format(output_dir, bname), [s])
 
             Ilp = cv2.normalize(src=(Ilp * 255.), dst=None, alpha=0, beta=255, norm_type=cv2.NORM_MINMAX, dtype=cv2.CV_8U)

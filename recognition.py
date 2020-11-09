@@ -79,6 +79,7 @@ class E2E(object):
         start_gen_output = time.time()
         img = self.gen_output.draw(img, Lcars, Llp_shapes, Llp_str)
         print("Gen output cost: ", time.time() - start_gen_output)
+        print("TOTAL TIME: ", time.time() - start_detect_vehicle)
         return img, Llp_str
 
     def predict3(self, img, name):
