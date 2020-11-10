@@ -87,7 +87,7 @@ class DetectVehicle(object):
             WH = np.array(Iorig.shape[1::-1], dtype=float)
 
             for i, r in enumerate(R):
-                print("car size: w={}, h={}, area={}", r[2][2], r[2][3], r[2][2] * r[2][3])
+                # print("car size: w={}, h={}, area={}", r[2][2], r[2][3], r[2][2] * r[2][3])
                 _, _, ori_w, ori_h = r[2]
 
                 if ori_w * ori_h >= pixel_threshold:
@@ -99,7 +99,7 @@ class DetectVehicle(object):
 
                     Lcars.append(label)
 
-                    cv2.imwrite('{}/{}_{}car.png'.format(output_dir, bname, i), Icar)
+                    # cv2.imwrite('{}/{}_{}car.png'.format(output_dir, bname, i), Icar)
                     cars_img.append(Icar)
 
             # lwrite('{}/{}_cars.txt'.format(output_dir, bname), Lcars)

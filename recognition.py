@@ -35,9 +35,9 @@ class E2E(object):
         self.candidates = []
         self.prev_candidates = dict()
         
-        print("------- Before load VehicleDetection")
-        self.vehicle_detection = VehicleDetection()
-        print("------- After load VehicleDetection")
+        # print("------- Before load VehicleDetection")
+        # self.vehicle_detection = VehicleDetection()
+        # print("------- After load VehicleDetection")
         
         print("------- Before load LicensePlateDetection")
         self.license_plate_detection = LicensePlateDetection()

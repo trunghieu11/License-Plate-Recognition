@@ -11,7 +11,7 @@ RUN apt-get update \
   && apt install -y ffmpeg
 
 WORKDIR /src
-# COPY . /src
+COPY . /src
 
 COPY requirements.txt /src/
 RUN pip3 install -r requirements.txt

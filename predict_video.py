@@ -113,7 +113,7 @@ def predict_video(model, input_video, output_video, output_file, frame_rate=4):
 
         # skip frame for faster processing
         if frame_count % frame_rate != 0:
-            # out.write(frame)
+            out.write(frame)
             continue
 
         # frame = cv2.resize(frame, video_size)
@@ -128,7 +128,7 @@ def predict_video(model, input_video, output_video, output_file, frame_rate=4):
             processed_frame = frame
 
         # cv2.imshow('video', processed_frame)
-        cv2.imwrite("/src/output/images/frame_{}.jpeg".format(frame_count), processed_frame)
+        # cv2.imwrite("/src/output/images/frame_{}.jpeg".format(frame_count), processed_frame)
         out.write(processed_frame)
 
         if cv2.waitKey(1) & 0xFF == ord('q'):
@@ -137,7 +137,7 @@ def predict_video(model, input_video, output_video, output_file, frame_rate=4):
     cap.release()
     cv2.destroyAllWindows()
     # choose license plate
-    selected_license_plates = select_license_plate(license_list, queue_size=5, match_size=2)
+    selected_license_plates = select_license_plate(license_list, queue_size=5, match_size=1)
 
     print("selected_license_plates: ", selected_license_plates)
 
@@ -160,8 +160,8 @@ if __name__ == "__main__":
     # output_file = args.output_file
     model = E2E()
 
-    input_video = "/src/test_video/test_2_short.MOV"
-    output_video = "/src/output/test_2_short.webm"
+    input_video = "/src/test_video/test.MOV"
+    output_video = "/src/output/test.webm"
     output_file = "/src/output/output_file.txt"
     
     # start
