@@ -79,8 +79,8 @@ def predict_video(model, input_video, output_video, output_file, frame_rate=4):
     rotate_side = 0
 
     if "rotate" in video_info["tags"]:
-        # if video_info["tags"]["rotate"] == '90' or video_info["tags"]["rotate"] == '-90':
-        #     video_size = (int(width), int(height))
+        if video_info["tags"]["rotate"] == '90' or video_info["tags"]["rotate"] == '-90':
+            video_size = (int(height), int(width))
 
         if video_info["tags"]["rotate"] == '90':
             rotate_side = cv2.ROTATE_90_CLOCKWISE
@@ -129,6 +129,7 @@ def predict_video(model, input_video, output_video, output_file, frame_rate=4):
 
         # cv2.imshow('video', processed_frame)
         # cv2.imwrite("/src/output/images/frame_{}.jpeg".format(frame_count), processed_frame)
+        
         out.write(processed_frame)
 
         if cv2.waitKey(1) & 0xFF == ord('q'):
@@ -160,8 +161,8 @@ if __name__ == "__main__":
     # output_file = args.output_file
     model = E2E()
 
-    input_video = "/src/test_video/test.MOV"
-    output_video = "/src/output/test.webm"
+    input_video = "/src/test_video/test_short.MOV"
+    output_video = "/src/output/test_short.webm"
     output_file = "/src/output/output_file.txt"
     
     # start
