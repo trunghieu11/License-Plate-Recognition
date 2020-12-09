@@ -64,6 +64,7 @@ class E2E(object):
             start_detect_lp = time.time()
             lp_img, shape = self.license_plate_detection.predict(car, "{}_car{}".format(name, i))
             print("Predict lp cost: ", time.time() - start_detect_lp)
+            print("\t\tCar image shape: ", car.shape)
 
             Llp_shapes.append(shape)
 
@@ -72,7 +73,8 @@ class E2E(object):
                 lp_str = self.ocr.predict(lp_img)
                 print("Predict ocr cost: ", time.time() - start_ocr)
                 Llp_str.append(lp_str)
-                print("Result: ", lp_str)
+                print("\t\tLP image shape: ", lp_img.shape)
+                print("\t\tResult: ", lp_str)
             else:
                 Llp_str.append(None)
         
@@ -80,7 +82,7 @@ class E2E(object):
         img = self.gen_output.draw(img, Lcars, Llp_shapes, Llp_str)
         print("Gen output cost: ", time.time() - start_gen_output)
         print("TOTAL TIME: ", time.time() - start_detect_vehicle)
-        return img, Llp_str
+        return img, Llp_str, len(cars_img)
 
     def predict3(self, img, name):
         print("-" * 50)

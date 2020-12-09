@@ -32,7 +32,7 @@ class LicensePlateDetection():
         ratio = float(max(Ivehicle.shape[:2]))/min(Ivehicle.shape[:2])
         side = int(ratio*288.)
         bound_dim = min(side + (side % (2**4)), 608)
-        print("\t\tBound dim: {}, ratio: {}".format(bound_dim, ratio))
+        # print("\t\tBound dim: {}, ratio: {}".format(bound_dim, ratio))
 
         Llp, LlpImgs, _ = detect_lp(self.wpod_net, im2single(Ivehicle), bound_dim, 2**4, (240, 80), self.lp_threshold)
 
@@ -42,7 +42,7 @@ class LicensePlateDetection():
             Ilp = cv2.cvtColor(Ilp, cv2.COLOR_GRAY2BGR)
 
             s = Shape(Llp[0].pts)
-
+            
             # cv2.imwrite('{}/{}_lp.png'.format(output_dir, bname), Ilp * 255.)
             # writeShapes('{}/{}_lp.txt'.format(output_dir, bname), [s])
 

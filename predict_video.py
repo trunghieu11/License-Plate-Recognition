@@ -91,13 +91,13 @@ def predict_video(model, input_video, output_video, output_file, frame_rate=4):
         
         need_rotate = True
 
-    fourcc = cv2.VideoWriter_fourcc(*'vp80')
-    # fourcc = cv2.VideoWriter_fourcc(*'XVID')
+    # fourcc = cv2.VideoWriter_fourcc(*'vp80')
+    fourcc = cv2.VideoWriter_fourcc(*'XVID')
     out = cv2.VideoWriter(output_video, fourcc, 20.0, video_size)
 
     # load model
     frame_count = 0
-
+    next_frame = 0
     license_list = []
 
     while cap.isOpened():
@@ -112,14 +112,21 @@ def predict_video(model, input_video, output_video, output_file, frame_rate=4):
             frame = cv2.rotate(frame, rotate_side)
 
         # skip frame for faster processing
-        if frame_count % frame_rate != 0:
+        if frame_count < next_frame:
             out.write(frame)
             continue
+        
+        next_frame = frame_count + frame_rate
+
+        print("frame_count: ", frame_count)
 
         # frame = cv2.resize(frame, video_size)
         try:
-            processed_frame, all_license_plates = predict_one_image(frame, model, name="frame_{}".format(frame_count))
+            processed_frame, all_license_plates, total_cars = predict_one_image(frame, model, name="frame_{}".format(frame_count))
             license_list.append(all_license_plates)
+
+            if total_cars == 0:
+                next_frame = frame_count + frame_rate * 2
         except Exception as ex:
             print("=======> Error: ", ex)
             print(traceback.format_exc())
@@ -138,7 +145,7 @@ def predict_video(model, input_video, output_video, output_file, frame_rate=4):
     cap.release()
     cv2.destroyAllWindows()
     # choose license plate
-    selected_license_plates = select_license_plate(license_list, queue_size=5, match_size=1)
+    selected_license_plates = select_license_plate(license_list, queue_size=5, match_size=2)
 
     print("selected_license_plates: ", selected_license_plates)
 
@@ -155,15 +162,16 @@ def predict_video(model, input_video, output_video, output_file, frame_rate=4):
 if __name__ == "__main__":
 
 
-    # args = get_arguments()
-    # input_video = args.input_video
-    # output_video = args.output_video
-    # output_file = args.output_file
+    args = get_arguments()
+    input_video = args.input_video
+    output_video = args.output_video
+    output_file = args.output_file
+
     model = E2E()
 
-    input_video = "/src/test_video/test_short.MOV"
-    output_video = "/src/output/test_short.webm"
-    output_file = "/src/output/output_file.txt"
+    # input_video = "/src/test_video/test_short.MOV"
+    # output_video = "/src/output/test_short.webm"
+    # output_file = "/src/output/output_file.txt"
     
     # start
     start = time.time()

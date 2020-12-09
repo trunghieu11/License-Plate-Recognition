@@ -76,8 +76,6 @@ class DetectVehicle(object):
         R = sorted(R, key=lambda x: -x[1])
         R = [r for r in R if r[0] in ['car', 'bus']]
 
-        print('\t\t{} cars found by using detect_vehicle'.format(len(R)))
-
         cars_img = []
         Lcars = []
 
@@ -103,5 +101,7 @@ class DetectVehicle(object):
                     cars_img.append(Icar)
 
             # lwrite('{}/{}_cars.txt'.format(output_dir, bname), Lcars)
+
+        print('\t\t{} cars found by using detect_vehicle'.format(len(cars_img)))
 
         return cars_img, Lcars

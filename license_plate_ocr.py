@@ -44,7 +44,6 @@ class OCR:
             # 	f.write(lp_str + '\n')
 
             if OCR.LP_PATTERN.match(lp_str):
-                print('\t\tLP: {}'.format(lp_str))
                 return lp_str
             else:
                 return None
