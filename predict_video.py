@@ -46,7 +46,7 @@ def select_license_plate(license_list, queue_size=4, match_size=3):
                 result.add(key)
     return list(result)
 
-def predict_video(model, input_video, output_video, output_file, frame_rate=4):
+def predict_video(model, input_video, output_video, output_file, frame_rate=2):
     # start
 
     # args = get_arguments()
@@ -59,7 +59,7 @@ def predict_video(model, input_video, output_video, output_file, frame_rate=4):
 
     # video_size = (540, 960)
     # video_size = (1080, 1920)
-    video_size = (1920, 1080)
+    # video_size = (1920, 1080)
     # video_size=(960, 540)
 
     # remove existed output video
@@ -75,12 +75,17 @@ def predict_video(model, input_video, output_video, output_file, frame_rate=4):
     width  = cap.get(cv2.CAP_PROP_FRAME_WIDTH)  # float
     height = cap.get(cv2.CAP_PROP_FRAME_HEIGHT) # float
 
+    print("Video actual size: w={} h={}".format(width, height))
+    video_size = (int(width), int(height))
+    output_video_size = (960, 540)
+
     need_rotate = False
     rotate_side = 0
 
     if "rotate" in video_info["tags"]:
         if video_info["tags"]["rotate"] == '90' or video_info["tags"]["rotate"] == '-90':
             video_size = (int(height), int(width))
+            output_video_size = (540, 960)
 
         if video_info["tags"]["rotate"] == '90':
             rotate_side = cv2.ROTATE_90_CLOCKWISE
@@ -93,7 +98,7 @@ def predict_video(model, input_video, output_video, output_file, frame_rate=4):
 
     # fourcc = cv2.VideoWriter_fourcc(*'vp80')
     fourcc = cv2.VideoWriter_fourcc(*'XVID')
-    out = cv2.VideoWriter(output_video, fourcc, 20.0, video_size)
+    out = cv2.VideoWriter(output_video, fourcc, 20.0, output_video_size)
 
     # load model
     frame_count = 0
@@ -111,6 +116,8 @@ def predict_video(model, input_video, output_video, output_file, frame_rate=4):
         if need_rotate:
             frame = cv2.rotate(frame, rotate_side)
 
+        frame = cv2.resize(frame, output_video_size)
+
         # skip frame for faster processing
         if frame_count < next_frame:
             out.write(frame)
@@ -126,7 +133,7 @@ def predict_video(model, input_video, output_video, output_file, frame_rate=4):
             license_list.append(all_license_plates)
 
             if total_cars == 0:
-                next_frame = frame_count + frame_rate * 2
+                next_frame = frame_count + frame_rate * 5
         except Exception as ex:
             print("=======> Error: ", ex)
             print(traceback.format_exc())
@@ -145,7 +152,7 @@ def predict_video(model, input_video, output_video, output_file, frame_rate=4):
     cap.release()
     cv2.destroyAllWindows()
     # choose license plate
-    selected_license_plates = select_license_plate(license_list, queue_size=5, match_size=2)
+    selected_license_plates = select_license_plate(license_list, queue_size=5, match_size=3)
 
     print("selected_license_plates: ", selected_license_plates)
 

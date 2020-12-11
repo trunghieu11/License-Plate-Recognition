@@ -54,17 +54,18 @@ class E2E(object):
     def predict4(self, img, name):
         print("-" * 50)
         start_detect_vehicle = time.time()
-        cars_img, Lcars = self.detect_vehicle.detect(img, name)
+        cars_img, Lcars = self.detect_vehicle.detect(img, name, pixel_threshold=50000)
         print("Predict vehicle cost: ", time.time() - start_detect_vehicle)
 
         Llp_shapes = []
         Llp_str = []
         
-        for i, car in enumerate(cars_img):
+        for i, (car, loc) in enumerate(zip(cars_img, Lcars)):
             start_detect_lp = time.time()
             lp_img, shape = self.license_plate_detection.predict(car, "{}_car{}".format(name, i))
             print("Predict lp cost: ", time.time() - start_detect_lp)
-            print("\t\tCar image shape: ", car.shape)
+            print("\t\tCar image shape:\t", car.shape)
+            print("\t\tCar image location:\t", loc)
 
             Llp_shapes.append(shape)
 

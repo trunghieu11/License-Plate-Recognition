@@ -36,7 +36,7 @@ class Label:
 
     def prob(self): return self.__prob
 
-    def line(self): return 0 if self.tl()[1] < 0.2 else 1
+    def line(self): return 0 if self.tl()[1] < 0.35 else 1
 
     def set_class(self, cl):
         self.__cl = cl
