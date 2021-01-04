@@ -17,7 +17,7 @@ os.environ['KMP_DUPLICATE_LIB_OK'] = 'True'
 
 def get_arguments():
     arg = argparse.ArgumentParser()
-    arg.add_argument('-i', '--input_video', help='link to input video', default='test_video/test.MOV')
+    arg.add_argument('-i', '--input_video', help='link to input video', default='sample_video/test.MOV')
     arg.add_argument('-o', '--output_video', help='link to output video', default='output/output_test.MOV')
     arg.add_argument('-f', '--output_file', help='output file path', default='output/output_file.txt')
 
@@ -54,7 +54,7 @@ def predict_video(model, input_video, output_video, output_file, frame_rate=2):
     # output_video = args.output_video
     # output_file = args.output_file
 
-    # input_video = "test_video/IMG_0119.MOV"
+    # input_video = "sample_video/IMG_0119.MOV"
     # output_video = "output/output_IMG_0119.MOV"
 
     # video_size = (540, 960)
@@ -176,7 +176,7 @@ if __name__ == "__main__":
 
     model = E2E()
 
-    # input_video = "/src/test_video/test_short.MOV"
+    # input_video = "/src/sample_video/test_short.MOV"
     # output_video = "/src/output/test_short.webm"
     # output_file = "/src/output/output_file.txt"
     

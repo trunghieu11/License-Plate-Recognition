@@ -1,10 +1,12 @@
 import os
 import cv2
 import time
+import imutils
 import numpy as np
+
+from src.car import Car, ListCars
 from skimage import measure
 from imutils import perspective
-import imutils
 from data_utils import order_points, convert2Square, draw_labels_and_boxes
 from detect import detectNumberPlate
 from model import CNN_Model
@@ -44,14 +46,14 @@ class E2E(object):
         print("------- After load LicensePlateDetection")
         
         print("------- Before load OCR")
-        self.ocr = OCR()
+        self.ocr = OCR(ocr_threshold=0.1)
         print("------- After load OCR")
         
         print("------- Before load GenOutput")
         self.gen_output = GenOutput()
         print("------- After load GenOutput")
 
-    def predict4(self, img, name):
+    def predict4(self, img, frame_index, cars, name):
         print("-" * 50)
         start_detect_vehicle = time.time()
         cars_img, Lcars = self.detect_vehicle.detect(img, name, pixel_threshold=50000)
@@ -61,23 +63,48 @@ class E2E(object):
         Llp_str = []
         
         for i, (car, loc) in enumerate(zip(cars_img, Lcars)):
-            start_detect_lp = time.time()
-            lp_img, shape = self.license_plate_detection.predict(car, "{}_car{}".format(name, i))
-            print("Predict lp cost: ", time.time() - start_detect_lp)
-            print("\t\tCar image shape:\t", car.shape)
-            print("\t\tCar image location:\t", loc)
+            print()
+            print("Processing car {}".format(i + 1))
+            cur_car = Car(frame_index, loc.tl(), loc.br())
+            need_check = True
+            car_name = "car_{}".format(len(cars) + 1)
 
-            Llp_shapes.append(shape)
+            for key, value in cars.items():
+                if value.in_list(cur_car):
+                    if value.license_plate is not None:
+                        # cur_car.license_plate = value.license_plate
+                        need_check = False
+                    car_name = key
 
-            if lp_img is not None:
-                start_ocr = time.time()
-                lp_str = self.ocr.predict(lp_img)
-                print("Predict ocr cost: ", time.time() - start_ocr)
-                Llp_str.append(lp_str)
-                print("\t\tLP image shape: ", lp_img.shape)
-                print("\t\tResult: ", lp_str)
+            if need_check:
+                start_detect_lp = time.time()
+                lp_img, shape = self.license_plate_detection.predict(car, "{}_car{}".format(name, i))
+                print("Predict lp cost: ", time.time() - start_detect_lp)
+                print("\t\tCar image shape:\t", car.shape)
+                print("\t\tCar image location:\t", loc)
+
+                Llp_shapes.append(shape)
+
+                if lp_img is not None:
+                    start_ocr = time.time()
+                    lp_str = self.ocr.predict(lp_img)
+                    print("Predict ocr cost: ", time.time() - start_ocr)
+                    Llp_str.append(lp_str)
+                    cur_car.license_plate = lp_str
+                    print("\t\tLP image shape: ", lp_img.shape)
+                    print("\t\tResult: ", lp_str)
+                else:
+                    Llp_str.append(None)
             else:
+                Llp_shapes.append(None)
                 Llp_str.append(None)
+            
+            if car_name not in cars:
+                cars[car_name] = ListCars([], None)
+                print("New car_name {}: ".format(car_name), cars[car_name].cars)
+
+            cars[car_name].add(cur_car)
+            print("cur car license_plate: ", cur_car.license_plate)
         
         start_gen_output = time.time()
         img = self.gen_output.draw(img, Lcars, Llp_shapes, Llp_str)
